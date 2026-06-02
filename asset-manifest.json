@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/CFF-Main-Task/static/css/main.677fbf2b.css",
-    "main.js": "/CFF-Main-Task/static/js/main.65a333cf.js",
+    "main.css": "/CFF-Main-Task/static/css/main.59b52ac5.css",
+    "main.js": "/CFF-Main-Task/static/js/main.841468ff.js",
     "static/media/anime.png": "/CFF-Main-Task/static/media/anime.5e6c9f4cd97d51788531.png",
     "static/media/genknow.png": "/CFF-Main-Task/static/media/genknow.e969226134ff8ad57cd1.png",
     "static/media/javascript.png": "/CFF-Main-Task/static/media/javascript.266bd9fb2663dcc057b4.png",
     "index.html": "/CFF-Main-Task/index.html",
-    "main.677fbf2b.css.map": "/CFF-Main-Task/static/css/main.677fbf2b.css.map",
-    "main.65a333cf.js.map": "/CFF-Main-Task/static/js/main.65a333cf.js.map"
+    "main.59b52ac5.css.map": "/CFF-Main-Task/static/css/main.59b52ac5.css.map",
+    "main.841468ff.js.map": "/CFF-Main-Task/static/js/main.841468ff.js.map"
   },
   "entrypoints": [
-    "static/css/main.677fbf2b.css",
-    "static/js/main.65a333cf.js"
+    "static/css/main.59b52ac5.css",
+    "static/js/main.841468ff.js"
   ]
 }
