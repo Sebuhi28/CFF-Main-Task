@@ -1,0 +1,241 @@
+.result-main-content {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+  display: grid;
+  gap: 26px;
+}
+
+.result-summary-panel {
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 36px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.08);
+}
+
+.result-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.result-summary-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: #f5f3ff;
+  font-size: 32px;
+}
+
+.summary-status {
+  margin: 0;
+  color: #7c3aed;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.summary-title {
+  margin: 8px 0 6px;
+  font-size: 34px;
+  line-height: 1.05;
+  color: #0f172a;
+}
+
+.summary-text {
+  margin: 0;
+  color: #475569;
+  font-size: 16px;
+}
+
+.result-score-badge {
+  width: 180px;
+  height: 180px;
+  margin: 24px auto 10px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #ede9fe 0%, #e9d5ff 100%);
+  color: #581c87;
+  font-size: 52px;
+  font-weight: 800;
+  box-shadow: 0 24px 50px rgba(124, 58, 237, 0.14);
+}
+
+.result-summary-subtitle {
+  margin: 0 0 22px;
+  color: #475569;
+  font-size: 16px;
+  text-align: center;
+}
+
+.result-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.result-card {
+  padding: 22px 20px;
+  border-radius: 26px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.result-stat-title {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.result-stat-value {
+  margin: 0;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.result-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.primary-button,
+.secondary-button {
+  border: none;
+  border-radius: 18px;
+  padding: 14px 24px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.primary-button {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.primary-button:hover {
+  background: #6938f5;
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.secondary-button:hover {
+  background: #e2e8f0;
+}
+
+.analytics-panel {
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 32px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.06);
+}
+
+.analytics-panel h2 {
+  margin: 0 0 22px;
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.analytics-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 22px;
+  margin-bottom: 16px;
+  background: #ffffff;
+}
+
+.analytics-item.correct {
+  border-color: #d1fae5;
+  background: #f0fdf4;
+}
+
+.analytics-item.incorrect {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.analytics-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.analytics-status {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #eef2ff;
+  color: #3730a3;
+  font-weight: 700;
+}
+
+.analytics-item.correct .analytics-status {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.analytics-item.incorrect .analytics-status {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.analytics-question {
+  margin: 0;
+  font-size: 18px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.analytics-answers {
+  display: grid;
+  gap: 14px;
+}
+
+.answer-block {
+  border-radius: 20px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.answer-block span {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
+}
+
+.answer-block div {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.answer-block.correct-answer {
+  background: #ecfdf5;
+}
+
+.answer-block.your-answer {
+  background: #eff6ff;
+}

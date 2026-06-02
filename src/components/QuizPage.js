@@ -1,98 +1,82 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../components_css/QuizPage.css";
-import logo from "../assets/logo.png";
 
 function formatCategoryName(slug) {
-  return slug
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return slug.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function getHintCount(difficulty) {
+  if (difficulty === "easy") {
+    return 2;
+  }
+  if (difficulty === "hard") {
+    return 0;
+  }
+  return 1;
+}
+
+function getTimerValue(difficulty, timerValue) {
+  if (difficulty === "hard" && timerValue === "none") {
+    return "15";
+  }
+  return timerValue;
 }
 
 export default function QuizPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const queryParams = new URLSearchParams(location.search);
 
   const categorySlug = queryParams.get("category") || "general_knowledge";
   const difficulty = queryParams.get("difficulty") || "medium";
   const timerValue = queryParams.get("timer") || "30";
-  const effectiveTimer = difficulty === "hard" && timerValue === "none" ? "15" : timerValue;
+  const effectiveTimer = getTimerValue(difficulty, timerValue);
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [hintCount, setHintCount] = useState(difficulty === "easy" ? 2 : difficulty === "hard" ? 0 : 1);
+  const [hintCount, setHintCount] = useState(getHintCount(difficulty));
   const [removedOptions, setRemovedOptions] = useState([]);
   const [answerSubmitted, setAnswerSubmitted] = useState(false);
   const [answerCorrect, setAnswerCorrect] = useState(false);
   const [timeLeft, setTimeLeft] = useState(effectiveTimer === "none" ? null : parseInt(effectiveTimer, 10));
-  const [finished, setFinished] = useState(false);
+  const [questionResults, setQuestionResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
-    setFinished(false);
-    setCurrentIndex(0);
-    setSelectedOption(null);
-    setRemovedOptions([]);
-    setScore(0);
-    setHintCount(difficulty === "easy" ? 2 : difficulty === "hard" ? 0 : 1);
-    setTimeLeft(effectiveTimer === "none" ? null : parseInt(effectiveTimer, 10));
+    async function fetchQuiz() {
+      setLoading(true);
+      setError("");
+      setCurrentIndex(0);
+      setSelectedOption(null);
+      setRemovedOptions([]);
+      setScore(0);
+      setHintCount(getHintCount(difficulty));
+      setQuestionResults([]);
+      setTimeLeft(effectiveTimer === "none" ? null : parseInt(effectiveTimer, 10));
 
-    const loadQuiz = async () => {
-      const endpoints = [
-        `/api/quiz/${categorySlug}`,
-        `http://localhost:5000/api/quiz/${categorySlug}`,
-      ];
-
-      for (const endpoint of endpoints) {
-        try {
-          const response = await fetch(endpoint);
-          const text = await response.text();
-          const contentType = response.headers.get("content-type") || "";
-
-          if (!response.ok) {
-            throw new Error(`Server returned ${response.status}: ${text}`);
-          }
-
-          if (!contentType.includes("application/json")) {
-            throw new Error(`Non-JSON response from ${endpoint}`);
-          }
-
-          return JSON.parse(text);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          if (endpoint.includes("localhost:5000")) {
-            throw new Error(message);
-          }
-          // Try the next endpoint if the current one failed.
+      try {
+        const response = await fetch(`/api/quiz/${categorySlug}`);
+        if (!response.ok) {
+          throw new Error("Failed to load quiz questions.");
         }
-      }
-
-      throw new Error("Could not load quiz questions from any endpoint.");
-    };
-
-    loadQuiz()
-      .then((data) => {
+        const data = await response.json();
         setQuestions(data);
-      })
-      .catch((fetchError) => {
-        setError(
-          fetchError.message ||
-            "Something went wrong while loading questions. Ensure the backend is running and restart the frontend if needed."
-        );
-      })
-      .finally(() => {
+      } catch (fetchError) {
+        setError("Could not load quiz questions. Make sure the backend is running.");
+      } finally {
         setLoading(false);
-      });
-  }, [categorySlug, difficulty, timerValue, effectiveTimer]);
+      }
+    }
+
+    fetchQuiz();
+  }, [categorySlug, difficulty, effectiveTimer]);
 
   useEffect(() => {
-    if (effectiveTimer === "none" || finished || !questions.length) {
+    if (effectiveTimer === "none" || questions.length === 0) {
       return;
     }
 
@@ -109,13 +93,13 @@ export default function QuizPage() {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [effectiveTimer, finished, questions.length]);
+  }, [effectiveTimer, questions.length]);
 
   useEffect(() => {
-    if (timeLeft === 0 && effectiveTimer !== "none" && questions.length && !finished) {
+    if (timeLeft === 0 && effectiveTimer !== "none" && questions.length) {
       handleSkip();
     }
-  }, [timeLeft, effectiveTimer, finished, questions.length]);
+  }, [timeLeft]);
 
   useEffect(() => {
     setSelectedOption(null);
@@ -129,7 +113,7 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
-  const progress = totalQuestions ? Math.round(((currentIndex + 1) / totalQuestions) * 100) : 0;
+  const progress = totalQuestions === 0 ? 0 : Math.round(((currentIndex + 1) / totalQuestions) * 100);
 
   const handleOptionClick = (index) => {
     setSelectedOption(index);
@@ -138,32 +122,74 @@ export default function QuizPage() {
   const goToNextQuestion = () => {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= totalQuestions) {
-      setFinished(true);
+      const resultState = {
+        categorySlug,
+        difficulty,
+        score,
+        totalQuestions,
+        percentage: totalQuestions === 0 ? 0 : Math.round((score / totalQuestions) * 100),
+        correctCount: score,
+        incorrectCount: totalQuestions - score,
+        results: questionResults,
+        timer: effectiveTimer,
+      };
+      try {
+        sessionStorage.setItem("quizResultState", JSON.stringify(resultState));
+      } catch (error) {
+        // ignore errors when storage is unavailable
+      }
+      navigate("/result", { state: resultState });
       return;
     }
     setCurrentIndex(nextIndex);
   };
 
   const handleSubmit = () => {
-    if (selectedOption === null || !currentQuestion) return;
+    if (selectedOption === null || !currentQuestion) {
+      return;
+    }
 
     const correct = selectedOption === currentQuestion.correctAnswer;
     setAnswerCorrect(correct);
     setAnswerSubmitted(true);
+
     if (correct) {
-      setScore((prev) => prev + 1);
+      setScore(score + 1);
     }
+
+    const newResult = {
+      question: currentQuestion.question,
+      userAnswer: currentQuestion.options[selectedOption],
+      correctAnswer: currentQuestion.options[currentQuestion.correctAnswer],
+      correct,
+      skipped: false,
+    };
+    setQuestionResults([...questionResults, newResult]);
   };
 
-  const handleSkip = () => {
+  function handleSkip() {
     if (difficulty === "hard") {
       return;
     }
+
+    if (currentQuestion) {
+      const newResult = {
+        question: currentQuestion.question,
+        userAnswer: "Skipped",
+        correctAnswer: currentQuestion.options[currentQuestion.correctAnswer],
+        correct: false,
+        skipped: true,
+      };
+      setQuestionResults([...questionResults, newResult]);
+    }
+
     goToNextQuestion();
-  };
+  }
 
   const handleHint = () => {
-    if (hintCount <= 0 || !currentQuestion) return;
+    if (hintCount <= 0 || !currentQuestion) {
+      return;
+    }
 
     const wrongIndexes = currentQuestion.options
       .map((_, index) => index)
@@ -171,7 +197,7 @@ export default function QuizPage() {
 
     const selectedRemovals = wrongIndexes.slice(0, 2);
     setRemovedOptions(selectedRemovals);
-    setHintCount((prev) => Math.max(prev - 1, 0));
+    setHintCount(Math.max(hintCount - 1, 0));
   };
 
   const handleQuit = () => {
@@ -196,41 +222,14 @@ export default function QuizPage() {
     );
   }
 
-  if (finished) {
-    return (
-      <main className="quiz-main-content">
-        <div className="quiz-header">
-          <button className="quiz-back-button" onClick={handleQuit}>
-            ← Quit Quiz
-          </button>
-          <div className="quiz-category-chip">
-            <span>{formatCategoryName(categorySlug)}</span>
-            <small>{difficulty.toUpperCase()}</small>
-          </div>
-        </div>
-
-        <div className="quiz-summary-panel">
-          <h1 className="summary-title">Quiz Complete</h1>
-          <p className="summary-text">Nice work! You have completed the quiz.</p>
-          <div className="summary-score">Score: {score} / {totalQuestions}</div>
-          <div className="summary-actions">
-            <button className="primary-button" onClick={() => navigate("/")}>
-              Return Home
-            </button>
-            <button className="secondary-button" onClick={() => window.location.reload()}>
-              Play Again
-            </button>
-          </div>
-        </div>
-      </main>
-    );
+  const visibleOptions = [];
+  if (currentQuestion) {
+    for (let index = 0; index < currentQuestion.options.length; index += 1) {
+      if (!removedOptions.includes(index)) {
+        visibleOptions.push({ option: currentQuestion.options[index], index });
+      }
+    }
   }
-
-  const visibleOptions = currentQuestion
-    ? currentQuestion.options
-        .map((option, index) => ({ option, index }))
-        .filter(({ index }) => !removedOptions.includes(index))
-    : [];
 
   return (
     <main className="quiz-main-content">
@@ -263,7 +262,7 @@ export default function QuizPage() {
       </div>
 
       <section className="question-card">
-        <h2>{currentQuestion?.question}</h2>
+        <h2>{currentQuestion ? currentQuestion.question : "No question available."}</h2>
         <p className="question-subtitle">Select the correct answer</p>
 
         <div className="options-grid">
@@ -273,9 +272,7 @@ export default function QuizPage() {
             return (
               <button
                 key={index}
-                className={`option-button ${selectedOption === index ? "selected" : ""} ${
-                  isCorrect ? "correct" : ""
-                } ${isWrong ? "wrong" : ""}`}
+                className={`option-button ${selectedOption === index ? "selected" : ""} ${isCorrect ? "correct" : ""} ${isWrong ? "wrong" : ""}`}
                 onClick={() => handleOptionClick(index)}
                 disabled={answerSubmitted}
               >
